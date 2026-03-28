@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>IndoorVision</title>
+    <style>
+        :root{
+            --bg:#ffffff;
+            --text:#111111;
+            --muted:#6b7280;
+            --circle:#d9d9d9;
+            --circleText:#6a6a6a;
+            --chip:#d6d6d6;
+            --border:#e5e7eb;
+        }
+        *{ box-sizing:border-box; }
+            html,body{ height:100%; }
+            body{
+            margin:0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* ---------- Common ---------- */
+        .hidden{ display:none !important; }
+
+        /* Full-screen tap layer (for Start Page) */
+        .tapLayer{
+            position: fixed;
+            inset: 0;
+            background: transparent;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ---------- Start Screen ---------- */
+        .startScreen{
+            min-height:100vh;
+            padding: 24px 18px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:flex-start;
+            gap: 18px;
+        }
+
+        .startTitle{
+            margin-top: 85px;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: .2px;
+        }
+
+        .startCircle{
+            margin-top: 22px;
+            width: 240px;
+            height: 240px;
+            border-radius: 999px;
+            background: var(--circle);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            user-select:none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .startText{
+            color: var(--circleText);
+            font-weight: 800;
+            font-size: 22px;
+            line-height: 1.15;
+            letter-spacing: .6px;
+            text-transform: uppercase;
+            padding: 0 18px;
+        }
+
+        .startStatus{
+            margin-top: 26px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* ---------- Guidance Screen ---------- */
+        .guideScreen{
+            min-height: 100vh;
+            padding: 0;
+            display:flex;
+            flex-direction:column;
+            background: #fff;
+        }
+
+        .topBar{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding: 18px 16px 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topBarTitle{
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: .2px;
+        }
+
+        .topBarIcon{
+            width: 65px;
+            height: 65px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .topBarIcon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;   /* keeps aspect ratio */
+            border-radius: 6px;    /* optional */
+        }
+
+        .guideBody{
+            padding: 18px 16px;
+            display:flex;
+            flex-direction:column;
+            gap: 14px;
+        }
+
+        .q{
+            font-size: 18px;
+            font-weight: 800;
+            margin-top: 6px;
+        }
+
+        .bubble{
+            background: var(--chip);
+            border-radius: 18px;
+            padding: 12px 14px;
+            color: #222;
+            font-size: 16px;
+            line-height: 1.25;
+            max-width: 100%;
+            text-align: center;
+        }
+
+        /* guidance page “tap to stop rule informing” hint */
+        .hintStop{
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        /* ---------- Detection Screen (Image 3) ---------- */
+        .detectScreen{
+            min-height: 100vh;
+            display:flex;
+            flex-direction:column;
+            background:#fff;
+        }
+
+        .detectHeader{
+            padding: 18px 16px 10px 16px;
+        }
+
+        .detectTitle{
+            font-size: 34px;
+            font-weight: 900;
+            letter-spacing: .2px;
+        }
+
+        .detectFrameWrap{
+            flex: 1;
+            padding: 0 16px 18px 16px;
+        }
+
+        .detectFrame{
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 90px);
+            background: var(--circle);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .detectFrame video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;   /* full screen camera */
+            background: #000;
+        }
+
+        /* White status box */
+        .infoBox{
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 170px;
+            background: #fff;
+            border-radius: 2px;
+            padding: 10px 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .infoRow{ margin: 4px 0; }
+        .infoRow .k{ font-weight: 800; }
+        .infoRow .v{ font-weight: 700; }
+        .infoRow .v2{ font-weight: 700; }
+
+        .detectAreaLabel{
+            position: absolute;
+            left: 0; right: 0;
+            top: 48%;
+            transform: translateY(-50%);
+            text-align:center;
+            font-size: 20px;
+            font-weight: 800;
+            color: #111;
+        }
+
+        /* Speech output bar at bottom */
+        .speechBar{
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: 12px;
+            height: 44px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-radius: 2px;
+            padding: 0 12px;
+        }
+
+        .speechBarText{
+            font-size: 14px;
+            font-weight: 700;
+            color:#111;
+            text-align:center;
+            width:100%;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- START SCREEN -->
+    <div id="startScreen" class="startScreen">
+        <div class="startTitle">IndoorVision</div>
+
+        <div class="startCircle" aria-label="Press anywhere to start">
+        <div class="startText">PRESS ANYWHERE<br/>TO START</div>
+        </div>
+
+        <div class="startStatus">Status: Audio Guidance Ready</div>
+    </div>
+
+    <!-- Full-screen tap layer for start screen -->
+    <div id="tapLayer" class="tapLayer" aria-label="Tap anywhere"></div>
+
+    <!-- GUIDANCE SCREEN -->
+    <div id="guideScreen" class="guideScreen hidden">
+        <div class="topBar">
+        <div class="topBarTitle">Simple Guidance</div>
+        <div class="topBarIcon" aria-label="icon">
+            <img src="book.jpg" alt="App icon" />
+        </div>
+        </div>
+
+        <div class="guideBody">
+        <div class="q">How to hear the guidance again?</div>
+        <div class="bubble">
+            Tap anywhere once on the screen
+        </div>
+
+        <div class="q">How to stop the guidance audio?</div>
+        <div class="bubble">
+            Tap anywhere once on the screen
+        </div>
+
+        <div class="q">How to start detect object?</div>
+        <div class="bubble">
+            Tap anywhere twice on the screen
+        </div>
+
+        <div class="q">How to stop detect object?</div>
+        <div class="bubble">
+            Tap anywhere twice on the screen
+        </div>
+
+        <div class="q">How to exit the application?</div>
+        <div class="bubble">
+            Tap anywhere three times on the screen
+        </div>
+        <!-- <div class="bubble" style="max-width: 80%; text-align:center;"></div> -->
+
+        <div class="hintStop">Tip: Tap once to stop the rule audio immediately.</div>
+        </div>
+    </div>
+
+    <!-- DETECTION SCREEN -->
+    <div id="detectionScreen" class="detectScreen hidden">
+        <div class="detectHeader">
+        <div class="detectTitle">Object Detection</div>
+        </div>
+
+        <div class="detectFrameWrap">
+        <div class="detectFrame">
+            <video id="cameraView" autoplay playsinline muted></video>
+
+            <!-- White info box -->
+            <div class="infoBox" aria-label="Detection status">
+                <div class="infoRow"><span class="k">Status:</span> <span id="statStatus" class="v">Detecting</span></div>
+                <div class="infoRow"><span class="k">Nearest object:</span> <span id="statObject" class="v">-</span></div>
+                <div class="infoRow"><span class="k">Confidence:</span> <span id="statConf" class="v">-</span></div>
+                <div class="infoRow"><span class="k">Distance:</span> <span id="statDist" class="v">-</span></div>
+                <div class="infoRow"><span class="k">Speech:</span> <span id="statSpeech" class="v">On</span> <span id="statRate" class="v2">(Normal)</span></div>
+            </div>
+
+            <div class="speechBar">
+                <div class="speechBarText" id="speechOut">Speech Output</div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
